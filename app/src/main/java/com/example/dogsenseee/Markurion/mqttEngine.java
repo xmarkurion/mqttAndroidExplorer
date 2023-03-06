@@ -18,6 +18,7 @@ import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 //https://youtu.be/BBLqa2Wh6nQ -> If you need info from where this came from.
 
@@ -32,7 +33,7 @@ public class mqttEngine {
     private String username;
     private String password;
 
-    private String subTopic;
+    private HashSet<String> subTopics;
 
     private Context context;
 
@@ -61,6 +62,7 @@ public class mqttEngine {
     private void common(){
         this.status = false;
         this.uptime = 0;
+        this.subTopics = new HashSet<>();
     }
 
     public boolean getStatus() {
@@ -79,13 +81,15 @@ public class mqttEngine {
         this.password = password;
     }
 
-    public void setSubTopic(String topic) { this.subTopic = topic; }
+    public void setSubTopic(String topic) {
+        subTopics.add(topic);
+    }
 
     public void start() {
         client = new MqttAndroidClient(this.context, this.severURI, this.clientID);
         Log.d(TAG, "username: " + this.username);
         Log.d(TAG, "pass: " + this.password);
-        Log.d(TAG, "topic: " + this.subTopic);
+        Log.d(TAG, "topics " + this.subTopics.toString());
         Log.d(TAG, "server: " + this.severURI);
         Log.d(TAG, "clientID: " + this.clientID);
         connect();
@@ -139,27 +143,16 @@ public class mqttEngine {
         }
     }
 
-    //for internal led on pico
-    public void ledOn(){
-        sendNewMessage("1","pico/led");
-    }
-
-    public void ledOff(){
-        sendNewMessage("0","pico/led");
-    }
-
-    // This is for my led noticeboard
-    public void pubOn() {
-        sendNewMessage("true","board/display/backlight");
-    }
-
-    public void pubOff() {
-        sendNewMessage("false","board/display/backlight");
-    }
-
     private void sub() {
         try {
-            client.subscribe(this.subTopic, 0);
+            subTopics.forEach(topic ->{
+                try {
+                    client.subscribe(topic,0);
+                } catch (MqttException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
             client.subscribe("$SYS/broker/uptime", 0);
             client.setCallback(new MqttCallback() {
                 @Override
@@ -193,8 +186,6 @@ public class mqttEngine {
 
                 }
             });
-        } catch (MqttSecurityException e) {
-            throw new RuntimeException(e);
         } catch (MqttException e) {
             throw new RuntimeException(e);
         }

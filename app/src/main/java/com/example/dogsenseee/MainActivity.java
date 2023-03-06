@@ -86,8 +86,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 setTimer();
-//                M.setSubTopic("board/display/#");
+                //M.setSubTopic("board/display/#");
                 M.setSubTopic("#");
+//                M.setSubTopic("$SYS/broker/store/messages/count");
+//                M.setSubTopic("pico/led");
                 M.start();
             }
         });
@@ -95,14 +97,16 @@ public class MainActivity extends AppCompatActivity {
         on.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                M.ledOn();
+                M.sendNewMessage("1","pico/led");
+                M.sendNewMessage("true","board/display/backlight");
             }
         });
 
         off.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                M.ledOff();
+                M.sendNewMessage("0","pico/led");
+                M.sendNewMessage("false","board/display/backlight");
             }
         });
     }
