@@ -3,9 +3,8 @@ package com.example.dogsenseee;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -13,18 +12,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.dogsenseee.Markurion.mqttEngine;
-
 import org.eclipse.paho.android.service.MqttAndroidClient;
-
-
-import org.eclipse.paho.client.mqttv3.IMqttActionListener;
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.IMqttToken;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 
 import java.util.ArrayList;
 import java.util.Timer;
@@ -36,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
     private ArrayAdapter<String> arrayAdapter;
     private ArrayList<String> dataList;
     private ListView list;
-    private Button in, out, on,off;
+    private Button in, led, on,off;
     private static final String TAG = "MainScreen";
     private String topic, clientId, serverURI, username="pi", password="pi";
     private MqttAndroidClient client;
@@ -53,10 +41,12 @@ public class MainActivity extends AppCompatActivity {
         list = findViewById(R.id.list);
         in = findViewById(R.id.main_btn);
         on = findViewById(R.id.main_btn3);
+        led = findViewById(R.id.main_btn2);
         off = findViewById(R.id.main_btn4);
 
         on.setEnabled(false);
         off.setEnabled(false);
+        led.setEnabled(false);
         status.setText("Not connected..");
 
         dataList = new ArrayList<>();
@@ -109,6 +99,18 @@ public class MainActivity extends AppCompatActivity {
                 M.sendNewMessage("false","board/display/backlight");
             }
         });
+
+        led.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //M.sendNewMessage(Double.toString(M.getUptime()),"pico/MAX_LED/send");
+                M.sendNewMessage(String.format("%.1f",M.getUptime()),"pico/MAX_LED/scroll");
+                //M.sendNewMessage("","pico/MAX_LED/cls");
+//                Intent i = new Intent(MainActivity.this, LedActivity.class);
+//                i.putExtra("MQTT", M);
+//                startActivity(i);
+            }
+        });
     }
 
     private void setTimer(){
@@ -117,11 +119,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 MainActivity.this.runOnUiThread(new Runnable() {
+                    @SuppressLint("SetTextI18n")
                     @Override
                     public void run() {
                         if(M.getStatus()){
                             on.setEnabled(true);
                             off.setEnabled(true);
+                            led.setEnabled(true);
                             status.setText("Connected to: \n" + M.getSeverURI());
                             uptime.setText("Server uptime: " + String.format("%.1f",M.getUptime()) + " min");
                             t.cancel();

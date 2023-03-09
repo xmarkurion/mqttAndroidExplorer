@@ -1,10 +1,11 @@
 package com.example.dogsenseee.Markurion;
 
-import android.app.Activity;
 import android.content.Context;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
 import android.widget.ArrayAdapter;
-
+import androidx.annotation.NonNull;
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -13,19 +14,14 @@ import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
-import org.eclipse.paho.client.mqttv3.MqttSecurityException;
-
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.HashSet;
 
 //https://youtu.be/BBLqa2Wh6nQ -> If you need info from where this came from.
 
-public class mqttEngine {
+public class mqttEngine implements Parcelable {
 
     private ArrayAdapter<String> adapter;
-    private final String TAG = "MClass";
+    private String TAG = "MClass";
     private final String clientID;
     private final String severURI;
 
@@ -59,6 +55,29 @@ public class mqttEngine {
             this.adapter = adapter;
             common();
     }
+
+    protected mqttEngine(Parcel in) {
+        TAG = in.readString();
+        clientID = in.readString();
+        severURI = in.readString();
+        uptime = in.readDouble();
+        username = in.readString();
+        password = in.readString();
+        status = in.readByte() != 0;
+    }
+
+    public static final Creator<mqttEngine> CREATOR = new Creator<mqttEngine>() {
+        @Override
+        public mqttEngine createFromParcel(Parcel in) {
+            return new mqttEngine(in);
+        }
+
+        @Override
+        public mqttEngine[] newArray(int size) {
+            return new mqttEngine[size];
+        }
+    };
+
     private void common(){
         this.status = false;
         this.uptime = 0;
@@ -192,4 +211,19 @@ public class mqttEngine {
     }
 
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        dest.writeString(TAG);
+        dest.writeString(clientID);
+        dest.writeString(severURI);
+        dest.writeDouble(uptime);
+        dest.writeString(username);
+        dest.writeString(password);
+        dest.writeByte((byte) (status ? 1 : 0));
+    }
 }
