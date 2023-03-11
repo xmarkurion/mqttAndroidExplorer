@@ -11,7 +11,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.example.dogsenseee.Markurion.mqttEngine;
+import com.example.dogsenseee.Markurion.MqttEngine;
 import org.eclipse.paho.android.service.MqttAndroidClient;
 
 import java.util.ArrayList;
@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainScreen";
     private String topic, clientId, serverURI, username="pi", password="pi";
     private MqttAndroidClient client;
-    private mqttEngine M;
+    private MqttEngine M;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -58,7 +58,10 @@ public class MainActivity extends AppCompatActivity {
        list.setTranscriptMode(ListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
        list.setStackFromBottom(true);
 
-        M = new mqttEngine(
+       DogData dogData = new DogData();
+
+        M = new MqttEngine(
+                dogData,
                 arrayAdapter,
                 getApplicationContext(),
                 "Android_Device",
@@ -103,12 +106,13 @@ public class MainActivity extends AppCompatActivity {
         led.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                dogData.logPrintHashMapItems();
                 //M.sendNewMessage(Double.toString(M.getUptime()),"pico/MAX_LED/send");
                 M.sendNewMessage(String.format("%.1f",M.getUptime()),"pico/MAX_LED/scroll");
                 //M.sendNewMessage("","pico/MAX_LED/cls");
-//                Intent i = new Intent(MainActivity.this, LedActivity.class);
-//                i.putExtra("MQTT", M);
-//                startActivity(i);
+                Intent i = new Intent(MainActivity.this, LedActivity.class);
+                i.putExtra("DogData", dogData);
+                startActivity(i);
             }
         });
     }

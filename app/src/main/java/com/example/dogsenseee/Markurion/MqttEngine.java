@@ -1,11 +1,11 @@
 package com.example.dogsenseee.Markurion;
 
 import android.content.Context;
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.util.Log;
 import android.widget.ArrayAdapter;
-import androidx.annotation.NonNull;
+
+import com.example.dogsenseee.DogData;
+
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -14,14 +14,16 @@ import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+
+import java.util.Arrays;
 import java.util.HashSet;
 
 //https://youtu.be/BBLqa2Wh6nQ -> If you need info from where this came from.
 
-public class mqttEngine implements Parcelable {
-
+public class MqttEngine {
+    private DogData dogData;
     private ArrayAdapter<String> adapter;
-    private String TAG = "MClass";
+    private String TAG = "MqttEngineClass";
     private final String clientID;
     private final String severURI;
 
@@ -37,7 +39,7 @@ public class mqttEngine implements Parcelable {
 
     private boolean status;
 
-    public mqttEngine(ArrayAdapter<String> adapter, Context context, String clientId, String serverURI, String username, String password) {
+    public MqttEngine(DogData dogData, ArrayAdapter<String> adapter, Context context, String clientId, String serverURI, String username, String password) {
         this.clientID = clientId;
         this.severURI = serverURI;
         this.username = username;
@@ -46,37 +48,16 @@ public class mqttEngine implements Parcelable {
         this.adapter = adapter;
         common();
     }
-    public mqttEngine(ArrayAdapter<String> adapter, Context context, String clientId, String serverURI) {
+    public MqttEngine(DogData dogData, ArrayAdapter<String> adapter, Context context, String clientId, String serverURI) {
             this.clientID = clientId;
             this.severURI = serverURI;
             this.username = "";
             this.password = "";
             this.context = context;
             this.adapter = adapter;
+            this.dogData = dogData;
             common();
     }
-
-    protected mqttEngine(Parcel in) {
-        TAG = in.readString();
-        clientID = in.readString();
-        severURI = in.readString();
-        uptime = in.readDouble();
-        username = in.readString();
-        password = in.readString();
-        status = in.readByte() != 0;
-    }
-
-    public static final Creator<mqttEngine> CREATOR = new Creator<mqttEngine>() {
-        @Override
-        public mqttEngine createFromParcel(Parcel in) {
-            return new mqttEngine(in);
-        }
-
-        @Override
-        public mqttEngine[] newArray(int size) {
-            return new mqttEngine[size];
-        }
-    };
 
     private void common(){
         this.status = false;
@@ -192,9 +173,15 @@ public class mqttEngine implements Parcelable {
                             }
                         }catch (Exception e){}
                         Log.d(TAG, tempUptime);
+                    } else if(strTopic.equals("pico/btn")){
+                        String msg = new String( message.getPayload() ) ;
+                        adapter.add("T:" + topic + " Payload: " + msg);
+                        dogData.addNow(Integer.parseInt(msg));
+                        Log.d(TAG, "Btn press logged: " + Integer.parseInt(msg));
+
                     }else{
                         Log.d(TAG, "topic: " + topic);
-                        Log.d(TAG, "message: " + strTopic);
+                        Log.d(TAG, "message: " + new String(message.getPayload()));
                         adapter.add("T:" + topic + " Payload: "+ new String( message.getPayload()));
                     }
 
@@ -210,20 +197,4 @@ public class mqttEngine implements Parcelable {
         }
     }
 
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeString(TAG);
-        dest.writeString(clientID);
-        dest.writeString(severURI);
-        dest.writeDouble(uptime);
-        dest.writeString(username);
-        dest.writeString(password);
-        dest.writeByte((byte) (status ? 1 : 0));
-    }
 }

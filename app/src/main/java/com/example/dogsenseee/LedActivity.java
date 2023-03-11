@@ -6,19 +6,18 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
-import com.example.dogsenseee.Markurion.mqttEngine;
+import com.example.dogsenseee.Markurion.MqttEngine;
 
 public class LedActivity extends AppCompatActivity {
 
-    private mqttEngine M;
+    private DogData dogData;
     private Button send,clear,scroll;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_led);
-        M = getIntent().getParcelableExtra("MQTT");
-
+        dogData = getIntent().getParcelableExtra("dogData");
 
         send = findViewById(R.id.led_btn_send);
         clear = findViewById(R.id.led_btn_cls);
@@ -27,21 +26,22 @@ public class LedActivity extends AppCompatActivity {
         send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                M.sendNewMessage("Testing","pico/MAX_LED/send");
+                dogData.logPrintHashMapItems();
             }
         });
 
         clear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                M.sendNewMessage("a","pico/MAX_LED/clear");
+
             }
         });
 
         scroll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                M.sendNewMessage("Testing","pico/MAX_LED/scroll");
+
+
             }
         });
 
