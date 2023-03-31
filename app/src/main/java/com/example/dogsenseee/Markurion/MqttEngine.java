@@ -5,6 +5,7 @@ import android.util.Log;
 import android.widget.ArrayAdapter;
 
 import com.example.dogsenseee.DogData;
+import com.example.dogsenseee.DogDataSerial;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -21,7 +22,7 @@ import java.util.HashSet;
 //https://youtu.be/BBLqa2Wh6nQ -> If you need info from where this came from.
 
 public class MqttEngine {
-    private DogData dogData;
+    private DogDataSerial dogData;
     private ArrayAdapter<String> adapter;
     private String TAG = "MqttEngineClass";
     private final String clientID;
@@ -39,25 +40,26 @@ public class MqttEngine {
 
     private boolean status;
 
-    public MqttEngine(DogData dogData, ArrayAdapter<String> adapter, Context context, String clientId, String serverURI, String username, String password) {
+    public MqttEngine(DogDataSerial dogData, ArrayAdapter<String> adapter, Context context, String clientId, String serverURI, String username, String password) {
         this.clientID = clientId;
         this.severURI = serverURI;
         this.username = username;
         this.password = password;
         this.context = context;
         this.adapter = adapter;
+        this.dogData = dogData;
         common();
     }
-    public MqttEngine(DogData dogData, ArrayAdapter<String> adapter, Context context, String clientId, String serverURI) {
-            this.clientID = clientId;
-            this.severURI = serverURI;
-            this.username = "";
-            this.password = "";
-            this.context = context;
-            this.adapter = adapter;
-            this.dogData = dogData;
-            common();
-    }
+//    public MqttEngine(DogData dogData, ArrayAdapter<String> adapter, Context context, String clientId, String serverURI) {
+//            this.clientID = clientId;
+//            this.severURI = serverURI;
+//            this.username = "";
+//            this.password = "";
+//            this.context = context;
+//            this.adapter = adapter;
+//            this.dogData = dogData;
+//            common();
+//    }
 
     private void common(){
         this.status = false;

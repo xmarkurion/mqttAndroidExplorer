@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -25,10 +26,11 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<String> dataList;
     private ListView list;
     private Button in, led, on,off;
-    private static final String TAG = "MainScreen";
+    private static final String Tag = "MainScreen";
     private String topic, clientId, serverURI, username="pi", password="pi";
     private MqttAndroidClient client;
     private MqttEngine M;
+    private DogDataSerial dogData;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -58,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
        list.setTranscriptMode(ListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
        list.setStackFromBottom(true);
 
-       DogData dogData = new DogData();
+       dogData = new DogDataSerial();
 
         M = new MqttEngine(
                 dogData,
@@ -106,12 +108,14 @@ public class MainActivity extends AppCompatActivity {
         led.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dogData.logPrintHashMapItems();
                 //M.sendNewMessage(Double.toString(M.getUptime()),"pico/MAX_LED/send");
                 M.sendNewMessage(String.format("%.1f",M.getUptime()),"pico/MAX_LED/scroll");
                 //M.sendNewMessage("","pico/MAX_LED/cls");
                 Intent i = new Intent(MainActivity.this, LedActivity.class);
-                i.putExtra("DogData", dogData);
+
+                int sizeOflist = dogData.getDataHashMap().size();
+                Log.d(Tag, "Size of passed hash map is: " + sizeOflist);
+                i.putExtra("dogData", dogData);
                 startActivity(i);
             }
         });
